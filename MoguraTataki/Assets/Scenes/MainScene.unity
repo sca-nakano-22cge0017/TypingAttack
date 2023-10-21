@@ -5323,10 +5323,12 @@ MonoBehaviour:
   countDownText: {fileID: 2089857435}
   scoreText: {fileID: 1829756192}
   time: {fileID: 992937908}
+  limitTime: 5
   hp:
   - {fileID: 274984761}
   - {fileID: 432832223}
   - {fileID: 213565508}
+  defaultHp: 3
   key:
   - {fileID: 535809742}
   - {fileID: 465142503}
@@ -5354,6 +5356,18 @@ MonoBehaviour:
   - {fileID: 795141141}
   - {fileID: 1745248553}
   - {fileID: 261920230}
+  typingText:
+  - "\u3042\u3044\u3046\u3048\u304A"
+  - "\u304B\u304D\u304F\u3051\u3053"
+  - "\u3055\u3057\u3059\u305B\u305D"
+  - "\u305F\u3061\u3064\u3066\u3068"
+  - "\u306A\u306B\u306C\u306D\u306E"
+  typingTextRoma:
+  - AIUEO
+  - KAKIKUKEKO
+  - SASISUSESO
+  - TATITUTETO
+  - NANINUNENO
 --- !u!4 &1505743550
 Transform:
   m_ObjectHideFlags: 0
@@ -6207,7 +6221,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 1000000
+  m_Text: 0
 --- !u!222 &1829756193
 CanvasRenderer:
   m_ObjectHideFlags: 0
