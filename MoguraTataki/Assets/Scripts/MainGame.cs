@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using UnityEngine.SceneManagement;
 
 public class MainGame : MonoBehaviour
 {
@@ -21,17 +22,32 @@ public class MainGame : MonoBehaviour
     [SerializeField] int defaultHp;
     int _hp;
 
+    [SerializeField] float magnificationRate;
+    [SerializeField] Sprite[] enemySprite;
     [SerializeField] Image[] key;
+    List<Vector3> pos = new();
+    Vector3 particlePos;
+
+    [SerializeField] ParticleSystem starEffect;
 
     public string[] typingText;
     public string[] typingTextRoma;
     int textNum;
 
+    public string[] typingText2;
+    public string[] typingTextRoma2;
+    int textNum2;
+
+    [SerializeField] float levelBounus;
+    int level = 1;
+    int count = 1;
+    [SerializeField] int levelUpNum;
+
     char nowKey;
     int nowKeyNum;
     char nextKey;
     int nextKeyNum;
-    Color nextKeyColor = new Color(0.5226415f, 0.7219335f, 1f, 1f);
+    Color nextKeyColor = new Color(0.3207547f, 0.3207547f, 0.3207547f, 1f);
     char lateKey;
 
     enum STATE { WAIT = 0, PLAY, GAMEOVER, };
@@ -56,6 +72,7 @@ public class MainGame : MonoBehaviour
 
         for (int i = 0; i < key.Length; i++)
         {
+            key[i].sprite = enemySprite[0];
             key[i].enabled = false;
         }
 
@@ -76,7 +93,10 @@ public class MainGame : MonoBehaviour
                 if(_time <= 0)
                 {
                     _hp--;
-                    TextChange();
+                    if(_hp > 0)
+                    {
+                        TextChange();
+                    }
                 }
             }
 
@@ -91,6 +111,7 @@ public class MainGame : MonoBehaviour
                         {
                             KeyToImage(nowKey).enabled = false;
                             KeyToImage(nextKey).enabled = false;
+                            starEffect.Play();
                             KeyToImage(nextKey).color = new Color(1, 1, 1);
 
                             if (nextKeyNum < typingTextRoma[textNum].Length - 1)
@@ -103,6 +124,12 @@ public class MainGame : MonoBehaviour
                                 nowKeyNum++;
                                 nowKey = typingTextRoma[textNum][nowKeyNum];
                             }
+
+                            if(count < levelUpNum)
+                            {
+                                count++;
+                            }
+                            else if(count == levelUpNum) { count = 0; }
                             
                             KeyToImage(nowKey).enabled = true;
                             if(nowKey != nextKey)
@@ -124,7 +151,7 @@ public class MainGame : MonoBehaviour
                     {
                         if (Input.GetKeyDown(code))
                         {
-                            if (code.ToString() == nowKey.ToString())
+                            if (code.ToString() == nowKey.ToString() && _hp > 0)
                             {
                                 TextChange();
                             }
@@ -147,6 +174,12 @@ public class MainGame : MonoBehaviour
                 state = STATE.GAMEOVER;
             }
         }
+
+        if(state == STATE.GAMEOVER)
+        {
+            PlayerPrefs.SetInt("score", _score);
+            StartCoroutine(GameOver());
+        }
     }
 
     /// <summary>
@@ -159,14 +192,28 @@ public class MainGame : MonoBehaviour
             key[i].enabled = false;
         }
 
-        textNum = UnityEngine.Random.Range(0, typingTextRoma.Length);
-        text.text = typingText[textNum];
-        textRoma.text = typingTextRoma[textNum].ToLower();
+        if(level == 1)
+        {
+            textNum = UnityEngine.Random.Range(0, typingTextRoma.Length);
+            text.text = typingText[textNum];
+            textRoma.text = typingTextRoma[textNum].ToLower();
 
-        nowKeyNum = 0;
-        nextKeyNum = 1;
-        nowKey = typingTextRoma[textNum][nowKeyNum];
-        nextKey = typingTextRoma[textNum][nextKeyNum];
+            nowKeyNum = 0;
+            nextKeyNum = 1;
+            nowKey = typingTextRoma[textNum][nowKeyNum];
+            nextKey = typingTextRoma[textNum][nextKeyNum];
+        }
+        if(level == 2)
+        {
+            textNum2 = UnityEngine.Random.Range(0, typingTextRoma2.Length);
+            text.text = typingText2[textNum];
+            textRoma.text = typingTextRoma2[textNum].ToLower();
+
+            nowKeyNum = 0;
+            nextKeyNum = 1;
+            nowKey = typingTextRoma2[textNum][nowKeyNum];
+            nextKey = typingTextRoma2[textNum][nextKeyNum];
+        }
 
         KeyToImage(lateKey).enabled = false;
         KeyToImage(nowKey).enabled = true;
@@ -193,6 +240,13 @@ public class MainGame : MonoBehaviour
             _score += 500;
         }
         scoreText.text = _score.ToString();
+    }
+
+    IEnumerator GameOver()
+    {
+        countDownText.text = "GAMEOVER";
+        yield return new WaitForSeconds(3);
+        SceneManager.LoadScene("ResultScene");
     }
 
     Image KeyToImage(char c) //char‚ÅŽw’è‚³‚ê‚½Image‚ð•Ô‚·
