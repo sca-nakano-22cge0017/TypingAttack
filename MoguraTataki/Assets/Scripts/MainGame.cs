@@ -9,6 +9,7 @@ public class MainGame : MonoBehaviour
 {
     [SerializeField] Text text;
     [SerializeField] Text textRoma;
+    [SerializeField] Text textKanji;
     [SerializeField] Text countDownText;
 
     [SerializeField] Text scoreText;
@@ -32,11 +33,15 @@ public class MainGame : MonoBehaviour
 
     public string[] typingText;
     public string[] typingTextRoma;
+    public string[] typingTextKanji;
     int textNum;
 
     public string[] typingText2;
     public string[] typingTextRoma2;
     int textNum2;
+
+    List<TextData> Texts = new();
+    CSVLoader csvLoader;
 
     [SerializeField] float levelBounus;
     int level = 1;
@@ -48,6 +53,8 @@ public class MainGame : MonoBehaviour
     char nextKey;
     int nextKeyNum;
     Color nextKeyColor = new Color(0.3207547f, 0.3207547f, 0.3207547f, 1f);
+    //Color nowKeyColor = new Color(0.4377358f, 0.7621055f, 1f, 1f);
+    Color nowKeyColor = new Color(1f, 1f, 1f, 1f);
     char lateKey;
 
     enum STATE { WAIT = 0, PLAY, GAMEOVER, };
@@ -69,12 +76,15 @@ public class MainGame : MonoBehaviour
 
         text.text = "";
         textRoma.text = "";
+        textKanji.text = "";
 
         for (int i = 0; i < key.Length; i++)
         {
             key[i].sprite = enemySprite[0];
             key[i].enabled = false;
         }
+
+        Texts = csvLoader.texts;
 
         StartCoroutine(CountDown());
     }
@@ -125,14 +135,9 @@ public class MainGame : MonoBehaviour
                                 nowKey = typingTextRoma[textNum][nowKeyNum];
                             }
 
-                            if(count < levelUpNum)
-                            {
-                                count++;
-                            }
-                            else if(count == levelUpNum) { count = 0; }
-                            
                             KeyToImage(nowKey).enabled = true;
-                            if(nowKey != nextKey)
+                            KeyToImage(nowKey).color = nowKeyColor;
+                            if (nowKey != nextKey)
                             {
                                 KeyToImage(nextKey).enabled = true;
                                 KeyToImage(nextKey).color = nextKeyColor;
@@ -192,31 +197,36 @@ public class MainGame : MonoBehaviour
             key[i].enabled = false;
         }
 
-        if(level == 1)
+        //ƒŒƒxƒ‹•ÏX
+        if (count < levelUpNum)
         {
-            textNum = UnityEngine.Random.Range(0, typingTextRoma.Length);
-            text.text = typingText[textNum];
-            textRoma.text = typingTextRoma[textNum].ToLower();
-
-            nowKeyNum = 0;
-            nextKeyNum = 1;
-            nowKey = typingTextRoma[textNum][nowKeyNum];
-            nextKey = typingTextRoma[textNum][nextKeyNum];
+            count++;
         }
-        if(level == 2)
+        else if (count == levelUpNum) { count = 0; level++; }
+
+        if (level == 1)
         {
-            textNum2 = UnityEngine.Random.Range(0, typingTextRoma2.Length);
-            text.text = typingText2[textNum];
-            textRoma.text = typingTextRoma2[textNum].ToLower();
 
-            nowKeyNum = 0;
-            nextKeyNum = 1;
-            nowKey = typingTextRoma2[textNum][nowKeyNum];
-            nextKey = typingTextRoma2[textNum][nextKeyNum];
         }
+        else if (level == 2)
+        {
+            typingText = typingText2;
+            typingTextRoma = typingTextRoma2;
+        }
+
+        textNum = UnityEngine.Random.Range(0, typingTextRoma.Length);
+        text.text = typingText[textNum];
+        textRoma.text = typingTextRoma[textNum].ToLower();
+        textKanji.text = typingTextKanji[textNum];
+
+        nowKeyNum = 0;
+        nextKeyNum = 1;
+        nowKey = typingTextRoma[textNum][nowKeyNum];
+        nextKey = typingTextRoma[textNum][nextKeyNum];
 
         KeyToImage(lateKey).enabled = false;
         KeyToImage(nowKey).enabled = true;
+        KeyToImage(nowKey).color = nowKeyColor;
         KeyToImage(nextKey).enabled = true;
         KeyToImage(nextKey).color = nextKeyColor;
 
@@ -227,17 +237,18 @@ public class MainGame : MonoBehaviour
 
     void ScoreUp()
     {
+        float bounus = levelBounus * level;
         if(_time / limitTime >= 0.8)
         {
-            _score += 1000;
+            _score += Mathf.FloorToInt(1000 * bounus);
         }
         if (_time / limitTime >= 0.5 && _time / limitTime < 0.8)
         {
-            _score += 800;
+            _score += Mathf.FloorToInt(500 * bounus);
         }
         if (_time / limitTime >= 0 && _time / limitTime < 0.5)
         {
-            _score += 500;
+            _score += Mathf.FloorToInt(300 * bounus);
         }
         scoreText.text = _score.ToString();
     }
@@ -361,6 +372,8 @@ public class MainGame : MonoBehaviour
         textNum = UnityEngine.Random.Range(0, typingTextRoma.Length);
         text.text = typingText[textNum];
         textRoma.text = typingTextRoma[textNum].ToLower();
+        textKanji.text = typingTextKanji[textNum];
+
         nowKeyNum = 0;
         nextKeyNum = 1;
         nowKey = typingTextRoma[textNum][nowKeyNum];
@@ -368,6 +381,7 @@ public class MainGame : MonoBehaviour
         lateKey = nowKey;
 
         KeyToImage(nowKey).enabled = true;
+        KeyToImage(nowKey).color = nowKeyColor;
         KeyToImage(nextKey).enabled = true;
         KeyToImage(nextKey).color = nextKeyColor;
 
