@@ -12,7 +12,6 @@ public class MainGame : MonoBehaviour
     [SerializeField] Text text;
     [SerializeField] Text textRoma;
     [SerializeField] Text textKanji;
-    [SerializeField] Text countDownText;
 
     [SerializeField] Text scoreText;
     int _score;
@@ -60,6 +59,11 @@ public class MainGame : MonoBehaviour
     [SerializeField] Image damage;
     Animator damageAnim;
 
+    [SerializeField] Fade fade;
+
+    [SerializeField] Text levelUpText;
+    Animator levelUpAnim;
+
     enum STATE { WAIT = 0, PLAY, GAMEOVER, };
     STATE state = 0;
 
@@ -77,9 +81,9 @@ public class MainGame : MonoBehaviour
 
         textNum = 0;
 
-        text.text = "";
-        textRoma.text = "";
-        textKanji.text = "";
+        text.text = "ひらがな";
+        textRoma.text = "ローマ字";
+        textKanji.text = "漢字";
 
         for (int i = 0; i < key.Length; i++)
         {
@@ -91,6 +95,9 @@ public class MainGame : MonoBehaviour
         csvLoader = GetComponent<CSVLoader>();
 
         damageAnim = damage.GetComponent<Animator>();
+        levelUpAnim = levelUpText.GetComponent<Animator>();
+
+        fade.FadeIn();
 
         StartCoroutine(CountDown());
     }
@@ -103,7 +110,7 @@ public class MainGame : MonoBehaviour
             isLoad = true;
         }
 
-        if(state == STATE.PLAY)
+        if(state == STATE.PLAY && fade.FadeInEnd)
         {
             //制限時間
             if(_time >= 0)
@@ -177,6 +184,10 @@ public class MainGame : MonoBehaviour
                             if (code.ToString() == nowKey.ToString() && _hp > 0)
                             {
                                 TextChange();
+                                if (count < levelUpNum)
+                                {
+                                    count++;
+                                }
                             }
                         }
                     }
@@ -202,6 +213,7 @@ public class MainGame : MonoBehaviour
         {
             PlayerPrefs.SetInt("score", _score);
             StartCoroutine(GameOver());
+            state = STATE.WAIT;
         }
     }
 
@@ -216,13 +228,16 @@ public class MainGame : MonoBehaviour
         }
 
         //レベル変更
-        if (count < levelUpNum)
-        {
-            count++;
-        }
-        else if (count == levelUpNum) { count = 0; level++; }
+        if (count == levelUpNum)
+        { 
+            count = 0; 
+            level++;
 
-        TextDataInput(level);
+            levelUpText.text = "level" + level.ToString();
+            levelUpAnim.SetTrigger("LevelUp");
+
+            TextDataInput(level);
+        }
 
         textNum = UnityEngine.Random.Range(0, typingTextRoma.Count);
         text.text = typingText[textNum];
@@ -265,9 +280,22 @@ public class MainGame : MonoBehaviour
 
     IEnumerator GameOver()
     {
-        countDownText.text = "GAMEOVER";
+        levelUpText.text = "GAMEOVER";
+        levelUpAnim.SetTrigger("GameOver");
+
         yield return new WaitForSeconds(3);
-        SceneManager.LoadScene("ResultScene");
+
+        fade.FadeOut();
+
+        while(!fade.FadeOutEnd)
+        {
+            yield return null;
+        }
+
+        if(fade.FadeOutEnd)
+        {
+            SceneManager.LoadScene("ResultScene");
+        }    
     }
 
     Image KeyToImage(char c) //charで指定されたImageを返す
@@ -476,19 +504,27 @@ public class MainGame : MonoBehaviour
 
     IEnumerator CountDown()
     {
-        for(int i = 3; i >= 0; i--)
+        while(!fade.FadeInEnd)
         {
-            if(i > 0)
-            {
-                countDownText.text = i.ToString();
-            }
-            if(i == 0)
-            {
-                countDownText.text = "START!!";
-            }
-            yield return new WaitForSeconds(1f);
+            yield return null;
         }
-        countDownText.text = "";
+
+        for (int i = 3; i >= 0; i--)
+        {
+            yield return new WaitForSeconds(1f);
+            if (i > 0)
+            {
+                levelUpAnim.SetTrigger("LevelUp");
+                levelUpText.text = i.ToString();
+            }
+            if (i == 0)
+            {
+                levelUpAnim.SetTrigger("LevelUp");
+                levelUpText.text = "START!!";
+            }
+        }
+        yield return new WaitForSeconds(1f);
+        levelUpText.text = "";
         state = STATE.PLAY;
 
         TextDataInput(1);

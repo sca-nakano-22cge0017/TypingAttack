@@ -8,6 +8,7 @@ public class SceneChange : MonoBehaviour
     Fade fade;
 
     bool isToMain = false;
+    bool isToExplain = false;
     bool isToStart = false;
     bool isToResult = false;
     bool isExit = false;
@@ -24,14 +25,22 @@ public class SceneChange : MonoBehaviour
             if(isToMain)
             {
                 SceneManager.LoadScene("MainScene");
+                fade.FadeOutEnd = false;
+            }
+            if(isToExplain)
+            {
+                SceneManager.LoadScene("ExplainScene");
+                fade.FadeOutEnd = false;
             }
             if(isToStart)
             {
-                SceneManager.LoadScene("StartScene");
+                SceneManager.LoadScene("TitleScene");
+                fade.FadeOutEnd = false;
             }
             if(isToResult)
             {
                 SceneManager.LoadScene("ResultScene");
+                fade.FadeOutEnd = false;
             }
             if(isExit)
             {
@@ -43,6 +52,11 @@ public class SceneChange : MonoBehaviour
     public void ToMain()
     {
         isToMain = true;
+    }
+
+    public void ToExplain()
+    {
+        isToExplain = true;
     }
 
     public void ToStart()

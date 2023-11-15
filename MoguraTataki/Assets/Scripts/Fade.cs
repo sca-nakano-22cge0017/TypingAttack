@@ -10,9 +10,9 @@ public class Fade : MonoBehaviour
     bool fadeOutEnd = false;
     bool fadeInEnd = false;
     
-    public bool FadeOutEnd { get { return fadeOutEnd; } }
+    public bool FadeOutEnd { get { return fadeOutEnd; } set{ fadeOutEnd = value; } }
 
-    public bool FadeInEnd { get { return fadeInEnd; } }
+    public bool FadeInEnd { get { return fadeInEnd; } set { fadeInEnd = value; } }
 
     void Start()
     {
@@ -39,7 +39,7 @@ public class Fade : MonoBehaviour
         if(isFadeIn)
         {
 
-            if (transform.localPosition.x <-1920)
+            if (transform.localPosition.x > -1920)
             {
                 transform.Translate(Vector3.left * speed * Time.deltaTime);
             }
@@ -56,10 +56,12 @@ public class Fade : MonoBehaviour
     public void FadeOut()
     {
         isFadeOut = true;
+        transform.localPosition = new Vector3(1920, 0, 0);
     }
 
     public void FadeIn()
     {
         isFadeIn = true;
+        transform.localPosition = new Vector3(0, 0, 0);
     }
 }
