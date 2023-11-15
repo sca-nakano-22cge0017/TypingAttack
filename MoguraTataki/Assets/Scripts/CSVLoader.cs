@@ -15,10 +15,16 @@ public class CSVLoader : MonoBehaviour
 {
     List<TextData> Texts = new();
     int level = 0;
+    bool isLoad = false;
 
     public List<TextData> texts
     {
         get{ return Texts; }
+    }
+
+    public bool IsLoad
+    {
+        get { return isLoad;}
     }
 
     void Awake()
@@ -28,7 +34,7 @@ public class CSVLoader : MonoBehaviour
 
     void CSVLoad()
     {
-        var textsData = Resources.Load<TextAsset>("texts");
+        var textsData = Resources.Load<TextAsset>("Texts");
 
         var lineSplit = textsData.text.Split("\n");
 
@@ -52,5 +58,7 @@ public class CSVLoader : MonoBehaviour
                 Texts.Add(data);
             }
         }
+
+        isLoad = true;
     }
 }

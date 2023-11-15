@@ -5,33 +5,58 @@ using UnityEngine.SceneManagement;
 
 public class SceneChange : MonoBehaviour
 {
+    Fade fade;
+
+    bool isToMain = false;
+    bool isToStart = false;
+    bool isToResult = false;
+    bool isExit = false;
+
     void Start()
     {
-        
+        fade = GameObject.FindObjectOfType<Fade>();
     }
 
     void Update()
     {
-        
+        if (fade.FadeOutEnd == true)
+        {
+            if(isToMain)
+            {
+                SceneManager.LoadScene("MainScene");
+            }
+            if(isToStart)
+            {
+                SceneManager.LoadScene("StartScene");
+            }
+            if(isToResult)
+            {
+                SceneManager.LoadScene("ResultScene");
+            }
+            if(isExit)
+            {
+                Application.Quit();
+            }
+        }
     }
 
     public void ToMain()
     {
-        SceneManager.LoadScene("MainScene");
+        isToMain = true;
     }
 
     public void ToStart()
     {
-        SceneManager.LoadScene("StartScene");
+        isToStart = true;
     }
 
     public void ToResult()
     {
-        SceneManager.LoadScene("ResultScene");
+        isToResult = true;
     }
 
     public void Exit()
     {
-        Application.Quit();
+        isExit = true;
     }
 }

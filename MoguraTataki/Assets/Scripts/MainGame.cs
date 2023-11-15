@@ -7,6 +7,8 @@ using UnityEngine.SceneManagement;
 
 public class MainGame : MonoBehaviour
 {
+    [SerializeField] Canvas m_canvas;
+
     [SerializeField] Text text;
     [SerializeField] Text textRoma;
     [SerializeField] Text textKanji;
@@ -26,24 +28,22 @@ public class MainGame : MonoBehaviour
     [SerializeField] float magnificationRate;
     [SerializeField] Sprite[] enemySprite;
     [SerializeField] Image[] key;
-    List<Vector3> pos = new();
+    List<RectTransform> pos = new();
     Vector3 particlePos;
 
     [SerializeField] ParticleSystem starEffect;
 
-    public string[] typingText;
-    public string[] typingTextRoma;
-    public string[] typingTextKanji;
+    List<string> typingText;
+    List<string> typingTextRoma;
+    List<string> typingTextKanji;
     int textNum;
-
-    public string[] typingText2;
-    public string[] typingTextRoma2;
-    int textNum2;
 
     List<TextData> Texts = new();
     CSVLoader csvLoader;
+    bool isLoad = false;
 
     [SerializeField] float levelBounus;
+    float bounus = 1;
     int level = 1;
     int count = 1;
     [SerializeField] int levelUpNum;
@@ -56,6 +56,9 @@ public class MainGame : MonoBehaviour
     //Color nowKeyColor = new Color(0.4377358f, 0.7621055f, 1f, 1f);
     Color nowKeyColor = new Color(1f, 1f, 1f, 1f);
     char lateKey;
+
+    [SerializeField] Image damage;
+    Animator damageAnim;
 
     enum STATE { WAIT = 0, PLAY, GAMEOVER, };
     STATE state = 0;
@@ -82,15 +85,24 @@ public class MainGame : MonoBehaviour
         {
             key[i].sprite = enemySprite[0];
             key[i].enabled = false;
+            pos.Add(key[i].rectTransform);
         }
 
-        Texts = csvLoader.texts;
+        csvLoader = GetComponent<CSVLoader>();
+
+        damageAnim = damage.GetComponent<Animator>();
 
         StartCoroutine(CountDown());
     }
 
     void Update()
     {
+        if(csvLoader.IsLoad && !isLoad)
+        {
+            Texts = csvLoader.texts;
+            isLoad = true;
+        }
+
         if(state == STATE.PLAY)
         {
             //制限時間
@@ -103,7 +115,8 @@ public class MainGame : MonoBehaviour
                 if(_time <= 0)
                 {
                     _hp--;
-                    if(_hp > 0)
+                    damageAnim.SetTrigger("Damage");
+                    if (_hp > 0)
                     {
                         TextChange();
                     }
@@ -119,9 +132,14 @@ public class MainGame : MonoBehaviour
                         lateKey = code.ToString()[0];
                         if (code.ToString() == nowKey.ToString())
                         {
+                            var t = GetWorldPositionFromRectPosition(KeyPos(code.ToString()[0]));
+                            starEffect.transform.position = new Vector3(t.x, t.y, 0);
+                            starEffect.Play();
+
                             KeyToImage(nowKey).enabled = false;
                             KeyToImage(nextKey).enabled = false;
                             starEffect.Play();
+
                             KeyToImage(nextKey).color = new Color(1, 1, 1);
 
                             if (nextKeyNum < typingTextRoma[textNum].Length - 1)
@@ -204,17 +222,9 @@ public class MainGame : MonoBehaviour
         }
         else if (count == levelUpNum) { count = 0; level++; }
 
-        if (level == 1)
-        {
+        TextDataInput(level);
 
-        }
-        else if (level == 2)
-        {
-            typingText = typingText2;
-            typingTextRoma = typingTextRoma2;
-        }
-
-        textNum = UnityEngine.Random.Range(0, typingTextRoma.Length);
+        textNum = UnityEngine.Random.Range(0, typingTextRoma.Count);
         text.text = typingText[textNum];
         textRoma.text = typingTextRoma[textNum].ToLower();
         textKanji.text = typingTextKanji[textNum];
@@ -237,18 +247,18 @@ public class MainGame : MonoBehaviour
 
     void ScoreUp()
     {
-        float bounus = levelBounus * level;
+        bounus = levelBounus * bounus;
         if(_time / limitTime >= 0.8)
         {
             _score += Mathf.FloorToInt(1000 * bounus);
         }
         if (_time / limitTime >= 0.5 && _time / limitTime < 0.8)
         {
-            _score += Mathf.FloorToInt(500 * bounus);
+            _score += Mathf.FloorToInt(500 * bounus / 2);
         }
         if (_time / limitTime >= 0 && _time / limitTime < 0.5)
         {
-            _score += Mathf.FloorToInt(300 * bounus);
+            _score += Mathf.FloorToInt(300 * bounus / 4);
         }
         scoreText.text = _score.ToString();
     }
@@ -352,6 +362,118 @@ public class MainGame : MonoBehaviour
         return k;
     }
 
+    RectTransform KeyPos(char c)
+    {
+        RectTransform k;
+
+        switch (c)
+        {
+            case 'A':
+                k = pos[0];
+                break;
+            case 'B':
+                k = pos[1];
+                break;
+            case 'C':
+                k = pos[2];
+                break;
+            case 'D':
+                k = pos[3];
+                break;
+            case 'E':
+                k = pos[4];
+                break;
+            case 'F':
+                k = pos[5];
+                break;
+            case 'G':
+                k = pos[6];
+                break;
+            case 'H':
+                k = pos[7];
+                break;
+            case 'I':
+                k = pos[8];
+                break;
+            case 'J':
+                k = pos[9];
+                break;
+            case 'K':
+                k = pos[10];
+                break;
+            case 'L':
+                k = pos[11];
+                break;
+            case 'M':
+                k = pos[12];
+                break;
+            case 'N':
+                k = pos[13];
+                break;
+            case 'O':
+                k = pos[14];
+                break;
+            case 'P':
+                k = pos[15];
+                break;
+            case 'Q':
+                k = pos[16];
+                break;
+            case 'R':
+                k = pos[17];
+                break;
+            case 'S':
+                k = pos[18];
+                break;
+            case 'T':
+                k = pos[19];
+                break;
+            case 'U':
+                k = pos[20];
+                break;
+            case 'V':
+                k = pos[21];
+                break;
+            case 'W':
+                k = pos[22];
+                break;
+            case 'X':
+                k = pos[23];
+                break;
+            case 'Y':
+                k = pos[24];
+                break;
+            case 'Z':
+                k = pos[25];
+                break;
+            default:
+                k = pos[0];
+                break;
+        }
+
+        return k;
+    }
+
+    void TextDataInput(int level)
+    {
+        List<string> hiragana = new();
+        List<string> roma = new();
+        List<string> kanji = new();
+
+        foreach (var t in Texts)
+        {
+            if (t.level == level)
+            {
+                hiragana.Add(t.hiragana);
+                roma.Add(t.roma);
+                kanji.Add(t.kanji);
+            }
+        }
+        typingText = hiragana;
+        typingTextRoma = roma;
+        typingTextKanji = kanji;
+    }
+
     IEnumerator CountDown()
     {
         for(int i = 3; i >= 0; i--)
@@ -369,7 +491,9 @@ public class MainGame : MonoBehaviour
         countDownText.text = "";
         state = STATE.PLAY;
 
-        textNum = UnityEngine.Random.Range(0, typingTextRoma.Length);
+        TextDataInput(1);
+
+        textNum = UnityEngine.Random.Range(0, typingTextRoma.Count);
         text.text = typingText[textNum];
         textRoma.text = typingTextRoma[textNum].ToLower();
         textKanji.text = typingTextKanji[textNum];
@@ -386,5 +510,19 @@ public class MainGame : MonoBehaviour
         KeyToImage(nextKey).color = nextKeyColor;
 
         _time = limitTime;
+    }
+
+    private Vector3 GetWorldPositionFromRectPosition(RectTransform rect)
+    {
+        //UI座標からスクリーン座標に変換
+        Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(m_canvas.worldCamera, rect.position);
+
+        //ワールド座標
+        Vector3 result = Vector3.zero;
+
+        //スクリーン座標→ワールド座標に変換
+        RectTransformUtility.ScreenPointToWorldPointInRectangle(rect, screenPos, m_canvas.worldCamera, out result);
+
+        return result;
     }
 }
