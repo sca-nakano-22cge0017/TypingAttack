@@ -44,9 +44,9 @@ public class Result : MonoBehaviour
                 if (lastScore < score)
                 {
                     newScoreText.enabled = true;
+                    lastScore = score;
+                    PlayerPrefs.SetInt("lastScore", lastScore);
                 }
-                lastScore = score;
-                PlayerPrefs.SetInt("lastScore", lastScore);
             }
         }
     }
