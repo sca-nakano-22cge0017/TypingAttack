@@ -64,6 +64,13 @@ public class MainGame : MonoBehaviour
     [SerializeField] Text levelUpText;
     Animator levelUpAnim;
 
+    [SerializeField] AudioClip typingSE;
+    [SerializeField] AudioClip levelUpSE;
+    [SerializeField] AudioClip damageSE;
+    [SerializeField] AudioClip countDownSE;
+    [SerializeField] AudioClip startSE;
+    [SerializeField] AudioSource audioSource;
+
     enum STATE { WAIT = 0, PLAY, GAMEOVER, };
     STATE state = 0;
 
@@ -122,6 +129,7 @@ public class MainGame : MonoBehaviour
                 if(_time <= 0)
                 {
                     _hp--;
+                    audioSource.PlayOneShot(damageSE);
                     damageAnim.SetTrigger("Damage");
                     if (_hp > 0)
                     {
@@ -130,45 +138,50 @@ public class MainGame : MonoBehaviour
                 }
             }
 
-            if (Input.anyKeyDown)
+            if (nowKeyNum != typingTextRoma[textNum].Length - 1)
             {
-                foreach (KeyCode code in Enum.GetValues(typeof(KeyCode)))
+                if(Input.anyKeyDown)
                 {
-                    if (Input.GetKeyDown(code))
+                    audioSource.PlayOneShot(typingSE);
+
+                    foreach (KeyCode code in Enum.GetValues(typeof(KeyCode)))
                     {
-                        lateKey = code.ToString()[0];
-                        if (code.ToString() == nowKey.ToString())
+                        if (Input.GetKeyDown(code))
                         {
-                            var t = GetWorldPositionFromRectPosition(KeyPos(code.ToString()[0]));
-                            starEffect.transform.position = new Vector3(t.x, t.y, 0);
-                            starEffect.Play();
-
-                            KeyToImage(nowKey).enabled = false;
-                            KeyToImage(nextKey).enabled = false;
-                            starEffect.Play();
-
-                            KeyToImage(nextKey).color = new Color(1, 1, 1);
-
-                            if (nextKeyNum < typingTextRoma[textNum].Length - 1)
+                            lateKey = code.ToString()[0];
+                            if (code.ToString() == nowKey.ToString())
                             {
-                                nextKeyNum++;
-                                nextKey = typingTextRoma[textNum][nextKeyNum];
-                            }
-                            if(nowKeyNum < typingTextRoma[textNum].Length - 1)
-                            {
-                                nowKeyNum++;
-                                nowKey = typingTextRoma[textNum][nowKeyNum];
-                            }
+                                var t = GetWorldPositionFromRectPosition(KeyPos(code.ToString()[0]));
+                                starEffect.transform.position = new Vector3(t.x, t.y, 0);
+                                starEffect.Play();
 
-                            KeyToImage(nowKey).enabled = true;
-                            KeyToImage(nowKey).color = nowKeyColor;
-                            if (nowKey != nextKey)
-                            {
-                                KeyToImage(nextKey).enabled = true;
-                                KeyToImage(nextKey).color = nextKeyColor;
+                                KeyToImage(nowKey).enabled = false;
+                                KeyToImage(nextKey).enabled = false;
+                                starEffect.Play();
+
+                                KeyToImage(nextKey).color = new Color(1, 1, 1);
+
+                                if (nextKeyNum < typingTextRoma[textNum].Length - 1)
+                                {
+                                    nextKeyNum++;
+                                    nextKey = typingTextRoma[textNum][nextKeyNum];
+                                }
+                                if (nowKeyNum < typingTextRoma[textNum].Length - 1)
+                                {
+                                    nowKeyNum++;
+                                    nowKey = typingTextRoma[textNum][nowKeyNum];
+                                }
+
+                                KeyToImage(nowKey).enabled = true;
+                                KeyToImage(nowKey).color = nowKeyColor;
+                                if (nowKey != nextKey)
+                                {
+                                    KeyToImage(nextKey).enabled = true;
+                                    KeyToImage(nextKey).color = nextKeyColor;
+                                }
                             }
+                            break;
                         }
-                        break;
                     }
                 }
             }
@@ -177,6 +190,8 @@ public class MainGame : MonoBehaviour
             {
                 if (Input.anyKeyDown)
                 {
+                    audioSource.PlayOneShot(typingSE);
+
                     foreach (KeyCode code in Enum.GetValues(typeof(KeyCode)))
                     {
                         if (Input.GetKeyDown(code))
@@ -233,8 +248,11 @@ public class MainGame : MonoBehaviour
             count = 0; 
             level++;
 
+            audioSource.PlayOneShot(levelUpSE);
             levelUpText.text = "level" + level.ToString();
             levelUpAnim.SetTrigger("LevelUp");
+
+            bounus = levelBounus * bounus;
 
             TextDataInput(level);
         }
@@ -262,18 +280,24 @@ public class MainGame : MonoBehaviour
 
     void ScoreUp()
     {
-        bounus = levelBounus * bounus;
-        if(_time / limitTime >= 0.8)
+        if(_score < 999999999)
         {
-            _score += Mathf.FloorToInt(1000 * bounus);
+            if (_time / limitTime >= 0.8)
+            {
+                _score += Mathf.FloorToInt(1000 * bounus);
+            }
+            if (_time / limitTime >= 0.5 && _time / limitTime < 0.8)
+            {
+                _score += Mathf.FloorToInt(500 * bounus / 2);
+            }
+            if (_time / limitTime >= 0 && _time / limitTime < 0.5)
+            {
+                _score += Mathf.FloorToInt(300 * bounus / 4);
+            }
         }
-        if (_time / limitTime >= 0.5 && _time / limitTime < 0.8)
+        else if(_score >= 999999999)
         {
-            _score += Mathf.FloorToInt(500 * bounus / 2);
-        }
-        if (_time / limitTime >= 0 && _time / limitTime < 0.5)
-        {
-            _score += Mathf.FloorToInt(300 * bounus / 4);
+            _score = 999999999;
         }
         scoreText.text = _score.ToString();
     }
@@ -514,11 +538,13 @@ public class MainGame : MonoBehaviour
             yield return new WaitForSeconds(1f);
             if (i > 0)
             {
+                audioSource.PlayOneShot(countDownSE);
                 levelUpAnim.SetTrigger("LevelUp");
                 levelUpText.text = i.ToString();
             }
             if (i == 0)
             {
+                audioSource.PlayOneShot(startSE);
                 levelUpAnim.SetTrigger("LevelUp");
                 levelUpText.text = "START!!";
             }

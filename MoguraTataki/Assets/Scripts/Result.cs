@@ -39,13 +39,12 @@ public class Result : MonoBehaviour
 
                 scoreText.text = s.ToString();
             }
-            else
+            else if(s >= score)
             {
                 if (lastScore < score)
                 {
                     newScoreText.enabled = true;
                 }
-                else { newScoreText.enabled = false; }
                 lastScore = score;
                 PlayerPrefs.SetInt("lastScore", lastScore);
             }
