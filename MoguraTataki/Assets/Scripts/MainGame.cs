@@ -5,6 +5,9 @@ using UnityEngine.UI;
 using System;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// メインゲーム制御
+/// </summary>
 public class MainGame : MonoBehaviour
 {
     [SerializeField] Canvas m_canvas;
@@ -52,7 +55,6 @@ public class MainGame : MonoBehaviour
     char nextKey;
     int nextKeyNum;
     Color nextKeyColor = new Color(0.3207547f, 0.3207547f, 0.3207547f, 1f);
-    //Color nowKeyColor = new Color(0.4377358f, 0.7621055f, 1f, 1f);
     Color nowKeyColor = new Color(1f, 1f, 1f, 1f);
     char lateKey;
 
@@ -111,6 +113,7 @@ public class MainGame : MonoBehaviour
 
     void Update()
     {
+        //CSVロード
         if(csvLoader.IsLoad && !isLoad)
         {
             Texts = csvLoader.texts;
@@ -119,7 +122,7 @@ public class MainGame : MonoBehaviour
 
         if(state == STATE.PLAY && fade.FadeInEnd)
         {
-            //制限時間
+            //制限時間処理
             if(_time >= 0)
             {
                 _time -= Time.deltaTime;
@@ -129,6 +132,8 @@ public class MainGame : MonoBehaviour
                 if(_time <= 0)
                 {
                     _hp--;
+
+                    //ダメージ効果音
                     audioSource.PlayOneShot(damageSE);
                     damageAnim.SetTrigger("Damage");
                     if (_hp > 0)
@@ -138,29 +143,36 @@ public class MainGame : MonoBehaviour
                 }
             }
 
+            //現在打つ単語の文字が、打つ文字列の最後の文字でなかったら
             if (nowKeyNum != typingTextRoma[textNum].Length - 1)
             {
+                //何か文字を打ったら
                 if(Input.anyKeyDown)
                 {
-                    audioSource.PlayOneShot(typingSE);
+                    audioSource.PlayOneShot(typingSE); //効果音再生
 
+                    //打った文字の確認
                     foreach (KeyCode code in Enum.GetValues(typeof(KeyCode)))
                     {
                         if (Input.GetKeyDown(code))
                         {
+                            //打った文字を保存
                             lateKey = code.ToString()[0];
+
+                            //打った文字が正しければ
                             if (code.ToString() == nowKey.ToString())
                             {
+                                //エフェクト生成
                                 var t = GetWorldPositionFromRectPosition(KeyPos(code.ToString()[0]));
                                 starEffect.transform.position = new Vector3(t.x, t.y, 0);
                                 starEffect.Play();
 
+                                //表示変更
                                 KeyToImage(nowKey).enabled = false;
                                 KeyToImage(nextKey).enabled = false;
-                                starEffect.Play();
-
                                 KeyToImage(nextKey).color = new Color(1, 1, 1);
 
+                                //文字を進める
                                 if (nextKeyNum < typingTextRoma[textNum].Length - 1)
                                 {
                                     nextKeyNum++;
@@ -172,6 +184,7 @@ public class MainGame : MonoBehaviour
                                     nowKey = typingTextRoma[textNum][nowKeyNum];
                                 }
 
+                                //表示変更
                                 KeyToImage(nowKey).enabled = true;
                                 KeyToImage(nowKey).color = nowKeyColor;
                                 if (nowKey != nextKey)
@@ -186,6 +199,7 @@ public class MainGame : MonoBehaviour
                 }
             }
 
+            //現在打つ単語の文字が、打つ文字列の最後の文字だったら
             if (nowKeyNum == typingTextRoma[textNum].Length - 1)
             {
                 if (Input.anyKeyDown)
@@ -198,7 +212,10 @@ public class MainGame : MonoBehaviour
                         {
                             if (code.ToString() == nowKey.ToString() && _hp > 0)
                             {
+                                //文字列変更
                                 TextChange();
+
+                                //成功回数増加
                                 if (count < levelUpNum)
                                 {
                                     count++;
@@ -224,6 +241,7 @@ public class MainGame : MonoBehaviour
             }
         }
 
+        //ゲームオーバー処理
         if(state == STATE.GAMEOVER)
         {
             PlayerPrefs.SetInt("score", _score);
@@ -267,6 +285,7 @@ public class MainGame : MonoBehaviour
         nowKey = typingTextRoma[textNum][nowKeyNum];
         nextKey = typingTextRoma[textNum][nextKeyNum];
 
+        //表示変更
         KeyToImage(lateKey).enabled = false;
         KeyToImage(nowKey).enabled = true;
         KeyToImage(nowKey).color = nowKeyColor;
@@ -278,9 +297,11 @@ public class MainGame : MonoBehaviour
         time.color = new Color(1, 1, 1);
     }
 
+    int maxScore = 999999999;
+
     void ScoreUp()
     {
-        if(_score < 999999999)
+        if(_score < maxScore)
         {
             if (_time / limitTime >= 0.8)
             {
@@ -295,13 +316,16 @@ public class MainGame : MonoBehaviour
                 _score += Mathf.FloorToInt(300 * bounus / 4);
             }
         }
-        else if(_score >= 999999999)
+        else if(_score >= maxScore)
         {
-            _score = 999999999;
+            _score = maxScore;
         }
         scoreText.text = _score.ToString();
     }
 
+    /// <summary>
+    /// ゲームオーバー
+    /// </summary>
     IEnumerator GameOver()
     {
         levelUpText.text = "GAMEOVER";
@@ -322,7 +346,8 @@ public class MainGame : MonoBehaviour
         }    
     }
 
-    Image KeyToImage(char c) //charで指定されたImageを返す
+    //charで指定されたImageを返す
+    Image KeyToImage(char c)
     {
         Image k;
 
@@ -414,6 +439,7 @@ public class MainGame : MonoBehaviour
         return k;
     }
 
+    //charで指定されたRectTransformを返す
     RectTransform KeyPos(char c)
     {
         RectTransform k;
@@ -506,6 +532,10 @@ public class MainGame : MonoBehaviour
         return k;
     }
 
+    /// <summary>
+    /// テキストデータの入力
+    /// </summary>
+    /// <param name="level">レベル</param>
     void TextDataInput(int level)
     {
         List<string> hiragana = new();
@@ -526,6 +556,10 @@ public class MainGame : MonoBehaviour
         typingTextKanji = kanji;
     }
 
+    /// <summary>
+    /// カウントダウン
+    /// </summary>
+    /// <returns></returns>
     IEnumerator CountDown()
     {
         while(!fade.FadeInEnd)
@@ -566,6 +600,7 @@ public class MainGame : MonoBehaviour
         nextKey = typingTextRoma[textNum][nextKeyNum];
         lateKey = nowKey;
 
+        //表示変更
         KeyToImage(nowKey).enabled = true;
         KeyToImage(nowKey).color = nowKeyColor;
         KeyToImage(nextKey).enabled = true;

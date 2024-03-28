@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// リザルト画面
+/// </summary>
 public class Result : MonoBehaviour
 {
     int score;
@@ -16,22 +19,26 @@ public class Result : MonoBehaviour
 
     void Start()
     {
+        //フェードイン
         fade.FadeIn();
 
         newScoreText.enabled = false;
-
+        
+        //前回のスコア取得
         lastScore = PlayerPrefs.GetInt("lastScore", 0);
         score = PlayerPrefs.GetInt("score");
     }
 
     void Update()
     {
+        //フェードが終わったら
         if(fade.FadeInEnd)
         {
             if(s < score)
             {
                 s++;
                 
+                //スペースを押したらスコアのカウントアップをスキップする
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     s = score;
@@ -41,9 +48,13 @@ public class Result : MonoBehaviour
             }
             else if(s >= score)
             {
+                //前回のスコアより高かったら
                 if (lastScore < score)
                 {
+                    //新記録の表示
                     newScoreText.enabled = true;
+
+                    //スコア更新
                     lastScore = score;
                     PlayerPrefs.SetInt("lastScore", lastScore);
                 }

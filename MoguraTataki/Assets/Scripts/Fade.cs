@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// フェード処理
+/// </summary>
 public class Fade : MonoBehaviour
 {
     [SerializeField] float speed;
@@ -13,11 +16,6 @@ public class Fade : MonoBehaviour
     public bool FadeOutEnd { get { return fadeOutEnd; } set{ fadeOutEnd = value; } }
 
     public bool FadeInEnd { get { return fadeInEnd; } set { fadeInEnd = value; } }
-
-    void Start()
-    {
-        
-    }
 
     void Update()
     {
@@ -53,12 +51,18 @@ public class Fade : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// フェードアウト
+    /// </summary>
     public void FadeOut()
     {
         isFadeOut = true;
         transform.localPosition = new Vector3(1920, 0, 0);
     }
 
+    /// <summary>
+    /// フェードイン
+    /// </summary>
     public void FadeIn()
     {
         isFadeIn = true;

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// シーン遷移制御
+/// </summary>
 public class SceneChange : MonoBehaviour
 {
     Fade fade;
@@ -20,6 +23,7 @@ public class SceneChange : MonoBehaviour
 
     void Update()
     {
+        //フェードアウトが終わったら遷移
         if (fade.FadeOutEnd == true)
         {
             if(isToMain)
@@ -49,26 +53,41 @@ public class SceneChange : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// メインゲームへ
+    /// </summary>
     public void ToMain()
     {
         isToMain = true;
     }
 
+    /// <summary>
+    /// 説明画面へ
+    /// </summary>
     public void ToExplain()
     {
         isToExplain = true;
     }
 
+    /// <summary>
+    /// タイトル画面へ
+    /// </summary>
     public void ToStart()
     {
         isToStart = true;
     }
 
+    /// <summary>
+    /// リザルト画面へ
+    /// </summary>
     public void ToResult()
     {
         isToResult = true;
     }
 
+    /// <summary>
+    /// ゲーム終了
+    /// </summary>
     public void Exit()
     {
         isExit = true;
